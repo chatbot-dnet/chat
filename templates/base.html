@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Centered Input Prompt</title>
+<style>
+  body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+  }
+
+  .input-container {
+    text-align: center;
+  }
+
+  input[type="text"] {
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    width: 300px; /* Adjust width as needed */
+  }
+
+  .instruction {
+    font-size: 18px;
+    margin-bottom: 10px;
+  }
+
+  .submit-button {
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+
+  .submit-button:hover {
+    background-color: #0056b3;
+  }
+</style>
+</head>
+<body>
+<div class="input-container">
+  <div class="instruction">Please input your problem:</div>
+  <input type="text" id="userInput" placeholder="Type here and press Enter...">
+  <button class="submit-button" id="submitButton">Submit</button>
+</div>
+
+<script>
+    document.getElementById("submitButton").addEventListener("click", function() {
+    var userInput = document.getElementById("userInput").value.trim();
+    if (userInput !== "") {
+      var data = { problem: userInput }; // Create JSON payload
+      fetch('/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data), // Convert data to JSON string
+      })
+      .then(response => {
+        if (response.ok) {
+          window.location.href = '/chat';
+        } else {
+          console.error('Failed to submit problem');
+        }
+      })
+      .catch(error => {
+        console.error('Error submitting problem:', error);
+      });
+    }
+  });
+</script>
+</body>
+</html>

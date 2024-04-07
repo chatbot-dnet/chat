@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!--<meta name="viewport" content="width=device-width, initial-scale=1.0">-->
+    <title>Live Chat</title>
+    <link rel="stylesheet" href="styles/style.css">
+</head>
+<body>
+    <div class="app">
+        <div class="screen join-screen active ">
+            <div class="form">
+                <h2> Join Chatroom</h2>
+                <div class="form-input">
+                    <label>username</label>
+                    <input type="text" id="username">
+                </div>
+                <div class="form-input">
+                    <button id="join-user">join</button>
+                </div>
+            </div>
+        </div>
+        <div class="screen chat-screen ">
+            <div class="header">
+                <div class="logo">Chatroom </div>
+                <button id="exit-chat">Exit</button>
+            </div>
+            <div class="messages">
+            </div>
+            <div class="typebox">
+                <input type="text" id="message-input">
+                <button id="send-message">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Remove the <script> tag for code.js -->
+    <!-- Serve socket.io from the server -->
+    <script src="http://localhost:3000/socket.io/socket.io.js"></script>
+    <!-- Include the JavaScript code directly from server.js -->
+    <script type="text/javascript">
+        const socket = io();
+        // You don't need to redeclare `app` here, just use it directly
+        let uname;
+    
+        document.querySelector(".join-screen #join-user").addEventListener("click", function () {
+            let username = document.querySelector(".join-screen #username").value;
+            if (username.length == 0) {
+                return;
+            }
+            socket.emit("newuser", username);
+            uname = username;
+            document.querySelector(".join-screen").classList.remove("active");
+            document.querySelector(".chat-screen").classList.add("active");
+        });
+    
+        document.querySelector(".chat-screen #send-message").addEventListener("click", function () {
+            let message = document.querySelector(".chat-screen #message-input").value;
+            if (message.length == 0) {
+                return;
+            }
+            renderMessage("my", {
+                username: uname,
+                text: message
+            });
+            socket.emit("chat", {
+                username: uname,
+                text: message
+            });
+            document.querySelector(".chat-screen #message-input").value = "";
+        });
+    
+        document.querySelector(".chat-screen #exit-chat").addEventListener("click", function () {
+            socket.emit("exituser", uname);
+            window.location.href = window.location.href;
+        });
+    
+        socket.on("update", function (update) {
+            renderMessage("update", update);
+        });
+    
+        socket.on("chat", function (message) {
+            renderMessage("other", message);
+        });
+    
+        function renderMessage(type, message) {
+            let messageContainer = document.querySelector(".chat-screen .messages");
+            if (type == "my") {
+                let el = document.createElement("div");
+                el.setAttribute("class", "message my-message");
+                el.innerHTML = `
+                    <div>
+                        <div class="name">you</div>
+                        <div class="text">${message.text}</div>
+                    </div>
+                `;
+                messageContainer.appendChild(el);
+            } else if (type == "other") {
+                let el = document.createElement("div");
+                el.setAttribute("class", "message other-message");
+                el.innerHTML = `
+                    <div>
+                        <div class="name">${message.username}</div>
+                        <div class="text">${message.text}</div>
+                    </div>
+                `;
+                messageContainer.appendChild(el);
+            } else if (type == "update") {
+                let el = document.createElement("div");
+                el.setAttribute("class", "update");
+                el.innerText = message;
+                messageContainer.appendChild(el);
+            }
+            messageContainer.scrollTop = messageContainer.scrollHeight - messageContainer.clientHeight;
+        }
+    </script>
+    
+    
+</body>
+</html>
