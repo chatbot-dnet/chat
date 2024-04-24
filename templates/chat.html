@@ -7,13 +7,26 @@
     <link rel="icon" type="image/png" href="../static/images/download (1).jpg">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css')}}">
 </head>
-<body>
+<body> 
 <div class="container">
+    <div class="app">
+        <div class="screen join-screen active">
+            <div class="form">
+                <h2>Join Chatroom</h2>
+                <div class="form-input">
+                    <label>Username</label>
+                    <input type="text" id="username">
+                </div>
+                <div class="form-input">
+                    <button id="join-user">Join</button>
+                </div>
+            </div>
+        </div>
     <div class="chatbox">
         <div class="chatbox__support" id="chatbotContainer">
             <div class="chatbox__header">
                 <div class="chatbox__image--header">
-                   <img src="static\images\download (1).jpg" alt="image"> 
+                <img src="static\images\download (1).jpg" alt="image"> 
                 </div>
                 <div class="chatbox__content--header">
                     <h2 class="chatbox__heading--header"> C.A chatbot </h2>
@@ -27,14 +40,14 @@
                     </div> -->
                     <div class="dropdown">
                         <button class="dropbtn">menu 
-                          <i class="fa fa-caret-down"></i>
+                        <i class="fa fa-caret-down"></i>
                         </button>
                         <div class="dropdown-content">
-                          <a href="#" id="maximizeButton">Maximize</a>
+                        <a href="#" id="maximizeButton">Maximize</a>
                             <a href="#" id="downloadButton">Download</a>
                             <button id="liveChatButton">Start Live Chat</button>
                         </div>
-                      </div> 
+                    </div> 
                 </div>
             </div>
             <div class="chatbox__messages">
@@ -50,12 +63,22 @@
             <button><img src="static\images\conversation (1).png" /></button>
         </div>
     </div>
+    </div>
 </div>
 
 <script>
     // JavaScript to handle opening the chatbox when the button is clicked
     document.getElementById("openChatButton").addEventListener("click", function() {
         document.getElementById("chatbotContainer").style.display = "block";
+    });
+    document.querySelector(".join-screen #join-user").addEventListener("click", function () {
+        let username = document.querySelector(".join-screen #username").value;
+        if (username.length === 0) {
+            return;
+        }
+        uname = username;
+        document.querySelector(".join-screen").classList.remove("active");
+        document.querySelector(".chat-screen").classList.add("active");
     });
 </script>
 <script>
