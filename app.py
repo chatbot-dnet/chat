@@ -45,13 +45,13 @@ all_words.sort()
 
 app.secret_key = 'Tp(2<a,(kw~[!cin6~E#fsKPf>Z6&NT%'
 
-conn = sqlite3.connect('templates/live chat/databases/chat_history.db', check_same_thread=False)
+conn = sqlite3.connect('templates/live chat/databases/chat.db', check_same_thread=False)
 c = conn.cursor()
 c.execute('''CREATE TABLE IF NOT EXISTS chat_history
              (username TEXT, problem TEXT, timestamp TEXT,agent TEXT DEFAULT NULL)''')
 conn.commit()
 
-conn = sqlite3.connect('templates/live chat/databases/user.db', check_same_thread=False)
+conn = sqlite3.connect('templates/live chat/databases/chat.db', check_same_thread=False)
 c = conn.cursor()
 c.execute('''CREATE TABLE IF NOT EXISTS users
              (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT UNIQUE, password TEXT)''')
@@ -79,7 +79,7 @@ def submit():
         username = session['username']
         problem = request.json.get('problem')  # Get problem from request JSON
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # Get current timestamp
-        conn = sqlite3.connect('templates/live chat/databases/chat_history.db')
+        conn = sqlite3.connect('templates/live chat/databases/chat.db')
         c = conn.cursor()
         c.execute("INSERT INTO chat_history (username, problem, timestamp) VALUES (?, ?, ?)",
                   (username, problem, timestamp))
@@ -93,7 +93,7 @@ def submit():
 def user_login():
     username = request.form['username']
     password = request.form['password']
-    conn = sqlite3.connect('templates/live chat/databases/user.db')
+    conn = sqlite3.connect('templates/live chat/databases/chat.db')
     c = conn.cursor()
     c.execute("SELECT * FROM users WHERE username = ?", (username,))
     user = c.fetchone()

@@ -33,6 +33,7 @@ function handleLiveChatLinkClick(event) {
         console.error('Error:', error);
     });
 }
+console.log('application');
 
 // Attach click event listener to live chat link
 const liveChatLink = document.querySelector('#sidebar .side-menu li:nth-child(2) a');
@@ -97,12 +98,13 @@ window.addEventListener('resize', function () {
 const switchMode = document.getElementById('switch-mode');
 
 switchMode.addEventListener('change', function () {
+    console.log('Switch Mode');
     if (this.checked) {
         document.body.classList.add('dark');
     } else {
         document.body.classList.remove('dark');
     }
-})
+});
 
 // WhatsApp Link
 const whatsappLink = document.querySelector('#sidebar .side-menu li:nth-child(3) a');
@@ -133,3 +135,18 @@ settingsLink.addEventListener('click', function (event) {
     window.location.href = 'your-settings-url';
     event.preventDefault();
 });
+
+document.addEventListener('DOMContentLoaded', function () {
+    const notification = document.querySelector('.notification');
+    const notificationPanel = document.querySelector('.notification-panel');
+
+    notification.addEventListener('click', function (event) {
+        event.preventDefault();
+        notificationPanel.classList.toggle('active');
+    });
+
+    // Function to update user count in the notification
+    function updateUserCount(userCount) {
+        const userCountElement = document.querySelector('.notification .num');
+        userCountElement.textContent = userCount;
+    }

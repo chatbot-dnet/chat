@@ -1,69 +1,62 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>I.T Chatbot</title>
-    <link rel="icon" type="image/png" href="../static/images/download (1).jpg">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css')}}">
-</head>
-<body> 
-<div class="container">
-    <div class="app">
-    <div class="chatbox">
-        <div class="chatbox__support" id="chatbotContainer">
-            <div class="chatbox__header">
-                <div class="chatbox__image--header">
-                <img src="static\images\download (1).jpg" alt="image"> 
-                </div>
-                <div class="chatbox__content--header">
-                    <h2 class="chatbox__heading--header"> C.A chatbot </h2>
-                    <!--<div class="settings-container">
-                        <button class="settings-button" id="settingsButton"><span class="dots">...</span></button>
-                        <div class="dropdown-content" id="dropdownContent">
-                            <a href="#" id="maximizeButton">Maximize</a>
-                            <a href="#" id="downloadButton">Download</a>
-                            <button id="liveChatButton">Start Live Chat</button>
-                        </div>
-                    </div> -->
-                    <div class="dropdown">
-                        <button class="dropbtn">menu 
-                        <i class="fa fa-caret-down"></i>
-                        </button>
-                        <div class="dropdown-content">
-                        <a href="#" id="maximizeButton">Maximize</a>
-                            <a href="#" id="downloadButton">Download</a>
-                            <button id="liveChatButton">Start Live Chat</button>
-                        </div>
-                    </div> 
-                </div>
-            </div>
-            <div class="chatbox__messages">
-                <div></div>
-            </div>
-            <div class="chatbox__footer">
-                <input type="text" placeholder="Write a message...">
-                <button class="chatbox__attach--footer attach__button" id="attachButton"><img width="30" height="30" src="https://img.icons8.com/ios-glyphs/30/attach.png" alt="attach"/></button>
-                <button class="chatbox__send--footer send__button">Send</button>
-            </div>
-        </div>
-        <div class="chatbox__button">
-            <button><img src="static\images\conversation (1).png" /></button>
-        </div>
-    </div>
-    </div>
-</div>
+import random
+import json
 
-<script>
-    // JavaScript to handle opening the chatbox when the button is clicked
-    document.getElementById("openChatButton").addEventListener("click", function() {
-        document.getElementById("chatbotContainer").style.display = "block";
-    });
-</script>
-<script>
-    $SCRIPT_ROOT = {{ request.script_root|tojson }};
-</script>
-<script type="text/javascript" src="{{ url_for('static', filename='app.js') }}"></script>
+import torch
 
-</body>
-</html>
+from model import NeuralNet
+from nltk_utils import bag_of_words, tokenize
+
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+with open('intents.json', 'r', encoding='utf-8') as json_data:
+    intents = json.load(json_data)
+
+
+FILE = "data.pth"
+data = torch.load(FILE)
+
+input_size = data["input_size"]
+hidden_size = data["hidden_size"]
+output_size = data["output_size"]
+all_words = data['all_words']
+tags = data['tags']
+model_state = data["model_state"]
+
+model = NeuralNet(input_size, hidden_size, output_size).to(device)
+model.load_state_dict(model_state)
+model.eval()
+
+bot_name = "Sam"
+
+def get_response(msg):
+    sentence = tokenize(msg)
+    X = bag_of_words(sentence, all_words)
+    X = X.reshape(1, X.shape[0])
+    X = torch.from_numpy(X).to(device)
+
+    output = model(X)
+    _, predicted = torch.max(output, dim=1)
+
+    tag = tags[predicted.item()]
+
+    probs = torch.softmax(output, dim=1)
+    prob = probs[0][predicted.item()]
+    if prob.item() > 0.75:
+        for intent in intents['intents']:
+            if tag == intent["tag"]:
+                return random.choice(intent['responses'])
+    
+    return "I do not understand..."
+
+
+if __name__ == "__main__":
+    print("Let's chat! (type 'quit' to exit)")
+    while True:
+        # sentence = "do you use credit cards?"
+        sentence = input("You: ")
+        if sentence == "quit":
+            break
+
+        resp = get_response(sentence)
+        print(resp)
+

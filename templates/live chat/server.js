@@ -9,7 +9,7 @@ const app = express();
 const server = http.createServer(app); // Create an HTTP server
 const io = require("socket.io")(server);
 
-const db = new sqlite3.Database('databases/agent.db');
+const db = new sqlite3.Database('databases/chat.db');
 
 let userCountUserChat = 0; // Initialize user count for users accessing /user_chat route
 
@@ -40,7 +40,7 @@ app.get('/agent_login', (req, res) => {
     res.sendFile(path.join(__dirname, '/public/agent_login.html'));
 });
 
-// Handle login
+// Handle login form submission
 app.post('/agent_login', (req, res) => {
     const username = req.body.username;
     const password = req.body.password;
@@ -48,13 +48,13 @@ app.post('/agent_login', (req, res) => {
     // Check if the username exists in the database
     db.get("SELECT * FROM agents WHERE username = ?", [username], (err, row) => {
         if (err || !row) {
-            return res.status(401).send('Invalid username or password');
+            return res.redirect('/agent_login?error=Invalid%20username%20or%20password');
         }
 
         // Compare the provided password with the stored hash
         bcrypt.compare(password, row.password, (err, result) => {
             if (err || !result) {
-                return res.status(401).send('Invalid username or password');
+                return res.redirect('/agent_login?error=Invalid%20username%20or%20password');
             }
 
             // Set user session upon successful login
@@ -65,6 +65,7 @@ app.post('/agent_login', (req, res) => {
         });
     });
 });
+
 
 // Handle AJAX request for redirecting to agent chat
 app.get('/redirect_to_agent_chat', (req, res) => {

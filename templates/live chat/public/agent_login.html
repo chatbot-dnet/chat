@@ -1,16 +1,26 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
-
+    <title>Agent Login</title>
     <link rel="stylesheet" type="text/css" href="/styles/login_style.css">
+    <style>
+        /* Additional CSS for error message */
+        #error-message {
+            display: none;
+            color: white;
+            background-color: #ff6347; /* Red background color */
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+    </style>
 </head>
 <body>
     <div class="login-container">
         <h2>Login</h2>
+        <div id="error-message"></div>
         <form id="login-form" action="/agent_login" method="post">
             <div class="form-group">
                 <label for="username">Username</label>
@@ -24,9 +34,14 @@
         </form>
     </div>
 
-    
-    <script src="http://localhost:3000/socket.io/socket.io.js"></script>
-
+    <script>
+        // Display error message if present
+        const errorMessage = new URLSearchParams(window.location.search).get('error');
+        if (errorMessage) {
+            const errorDiv = document.getElementById('error-message');
+            errorDiv.textContent = decodeURIComponent(errorMessage);
+            errorDiv.style.display = 'block';
+        }
+    </script>
 </body>
 </html>
-
