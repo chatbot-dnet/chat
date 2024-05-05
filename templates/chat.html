@@ -7,47 +7,24 @@
     <link rel="icon" type="image/png" href="../static/images/download (1).jpg">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css')}}">
 </head>
-<body> 
+<body>
 <div class="container">
-    <div class="app">
-        <div class="screen join-screen active">
-            <div class="form">
-                <h2>Join Chatroom</h2>
-                <div class="form-input">
-                    <label>Username</label>
-                    <input type="text" id="username">
-                </div>
-                <div class="form-input">
-                    <button id="join-user">Join</button>
-                </div>
-            </div>
-        </div>
     <div class="chatbox">
         <div class="chatbox__support" id="chatbotContainer">
             <div class="chatbox__header">
                 <div class="chatbox__image--header">
-                <img src="static\images\download (1).jpg" alt="image"> 
+                   <img src="static\images\download (1).jpg" alt="image"> 
                 </div>
                 <div class="chatbox__content--header">
                     <h2 class="chatbox__heading--header"> C.A chatbot </h2>
-                    <!--<div class="settings-container">
+                    <div class="settings-container">
                         <button class="settings-button" id="settingsButton"><span class="dots">...</span></button>
                         <div class="dropdown-content" id="dropdownContent">
                             <a href="#" id="maximizeButton">Maximize</a>
                             <a href="#" id="downloadButton">Download</a>
                             <button id="liveChatButton">Start Live Chat</button>
                         </div>
-                    </div> -->
-                    <div class="dropdown">
-                        <button class="dropbtn">menu 
-                        <i class="fa fa-caret-down"></i>
-                        </button>
-                        <div class="dropdown-content">
-                        <a href="#" id="maximizeButton">Maximize</a>
-                            <a href="#" id="downloadButton">Download</a>
-                            <button id="liveChatButton">Start Live Chat</button>
-                        </div>
-                    </div> 
+                    </div>
                 </div>
             </div>
             <div class="chatbox__messages">
@@ -63,28 +40,37 @@
             <button><img src="static\images\conversation (1).png" /></button>
         </div>
     </div>
-    </div>
 </div>
 
+<!-- Include Socket.IO client library from your Node.js server -->
+<script src="http://localhost:3001/socket.io/socket.io.js"></script>
 <script>
-    // JavaScript to handle opening the chatbox when the button is clicked
-    document.getElementById("openChatButton").addEventListener("click", function() {
-        document.getElementById("chatbotContainer").style.display = "block";
-    });
-    document.querySelector(".join-screen #join-user").addEventListener("click", function () {
-        let username = document.querySelector(".join-screen #username").value;
-        if (username.length === 0) {
-            return;
-        }
-        uname = username;
-        document.querySelector(".join-screen").classList.remove("active");
-        document.querySelector(".chat-screen").classList.add("active");
-    });
+    // Connect to the Socket.IO server running on port 3001
+    const socket = io('http://localhost:3001');
+
+    // Add event listeners and Socket.IO functionality here
 </script>
+
+<script src="/socket.io/socket.io.js"></script>
+
 <script>
     $SCRIPT_ROOT = {{ request.script_root|tojson }};
 </script>
-<script type="text/javascript" src="{{ url_for('static', filename='app.js') }}"></script>
+<script type="text/javascript" src="../static/app.js"></script>
+    
+<!-- Include Socket.IO library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.3.2/socket.io.js"
+    integrity="sha512-zN6KYOtONNTOGXz0RkWX2EpavN9VdIs+2w+To+fhciFv83YA9maUpi2lzZWrOfKXdFIZZomWufBznkyHi3a8oQ=="
+    crossorigin="anonymous"></script>
 
+<script>
+    // Connect to Socket.IO server
+    const socket = io();
+
+    // Add event listener to the button
+    document.getElementById('liveChatButton').addEventListener('click', function() {
+        socket.emit('initiate_live_chat');
+    });
+</script>
 </body>
 </html>
