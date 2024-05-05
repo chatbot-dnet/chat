@@ -27,6 +27,29 @@ app.use(session({
     resave: false,
     saveUninitialized: false
 }));
+function fetchData() {
+    return new Promise((resolve, reject) => {
+        const query = "SELECT username, problem FROM chat_history WHERE status = 'open' AND live_chat = 1";
+
+        db.all(query, (err, rows) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(rows);
+            }
+        });
+    });
+}
+
+app.get('/plant-data', async (req, res) => {
+    try {
+        const data = await fetchData();
+        res.json(data);
+    } catch (error) {
+        console.error("Error:", error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
 
 // Serve the user chat page
 app.get('/user_chat', (req, res) => {
@@ -92,7 +115,7 @@ app.get('/agent_dash', (req, res) => {
 
 // Handle Socket.IO connections
 io.on('connection', (socket) => {
-    console.log('A user connected');
+    console.log('Total users connected to user chat io :', userCountUserChat, socket.id);
     io.emit('userChatCount', userCountUserChat);
     // Handle incoming messages
     socket.on('newuser', (username) => {
