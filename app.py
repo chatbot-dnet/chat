@@ -48,18 +48,34 @@ app.secret_key = 'Tp(2<a,(kw~[!cin6~E#fsKPf>Z6&NT%'
 conn = sqlite3.connect('templates/live chat/databases/chat.db', check_same_thread=False)
 c = conn.cursor()
 c.execute('''CREATE TABLE IF NOT EXISTS chat_history
-             (username TEXT, problem TEXT, timestamp TEXT,agent TEXT DEFAULT NULL)''')
+            (username TEXT, problem TEXT, timestamp TEXT,live_chat TEXT DEFAULT 0,status TEXT DEFAULT closed,agent TEXT DEFAULT NULL)''')
 conn.commit()
 
 conn = sqlite3.connect('templates/live chat/databases/chat.db', check_same_thread=False)
 c = conn.cursor()
 c.execute('''CREATE TABLE IF NOT EXISTS users
-             (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT UNIQUE, password TEXT)''')
+            (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT UNIQUE, password TEXT)''')
 conn.commit()
 
 @app.route('/live')
 def live():
-    return redirect("http://localhost:3000/user_chat", code=302)
+    # Connect to the database
+    conn = sqlite3.connect('templates/live chat/databases/chat.db')
+    c = conn.cursor()
+    
+    # Update the chat_history table
+    c.execute("UPDATE chat_history SET live_chat = ?, status = ?",
+            ('1', 'open'))
+    
+    # Commit the changes and close the connection
+    conn.commit()
+    conn.close()
+    username = session.get('username')
+    if username:
+        return redirect(f"http://localhost:3000/user_chat?username={username}", code=302)
+    else:
+        # If no username exists, redirect to the home page
+        return redirect("http://127.0.0.1:5000/", code=302)
 
 @app.route('/')
 def index():
@@ -67,7 +83,8 @@ def index():
 
 @app.get("/base")
 def index_get():
-    return render_template("base.html")
+    username = session.get('username')
+    return render_template("base.html", username=username)
 
 @app.route('/chat')
 def chat():
@@ -82,7 +99,7 @@ def submit():
         conn = sqlite3.connect('templates/live chat/databases/chat.db')
         c = conn.cursor()
         c.execute("INSERT INTO chat_history (username, problem, timestamp) VALUES (?, ?, ?)",
-                  (username, problem, timestamp))
+                (username, problem, timestamp))
         conn.commit()
         conn.close()
         return jsonify({'success': True}), 200
@@ -100,6 +117,7 @@ def user_login():
     conn.close()
     if user and checkpw(password.encode('utf-8'), user[2].encode('utf-8')):
         session['username'] = username
+        print("Username:", username)
         return redirect('/base')
     else:
         return 'Invalid username or password'
