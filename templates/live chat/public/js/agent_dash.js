@@ -144,3 +144,59 @@ document.addEventListener('DOMContentLoaded', function() {
     // Fetch data every 10 seconds
     setInterval(fetchPlantData, 10000); 
 });
+
+
+if ("Notification" in window) {
+    console.log("Notification supported");
+    console.log('Permission status:', Notification.permission);
+    if (Notification.permission === 'granted') {
+        console.log('Permission status:', Notification.permission);
+        notify();
+    } else {
+        console.log('Requesting notification permission...');
+        Notification.requestPermission().then((res) => {
+            if (res === 'granted') {
+                console.log('Requesting notification permission...');
+                notify();
+            } else if (res === 'denied') {
+                console.log('Notification permission denied or dismissed.');
+            } else if (res === 'default') {
+                console.log('Notification permission not given.');
+            }
+        });
+    }
+} else {
+    console.error("Notification not supported");
+}
+
+
+function notify() {
+    const notificationsData = new Map([
+        ['dan', 'bitlocker'],
+        ['john', 'network issue'],
+        // Add more notifications as needed
+    ]);
+
+    notificationsData.forEach((issue, username) => {
+        const noti= new Notification("C.A chatbots",{
+            body: `User ${username} has a ${issue} issue`,
+            icon: './download (1).jpg',
+            vibrate: [150,50,150],
+        });
+
+        noti.addEventListener('click', () => {
+            window.open('http://localhost:3000/agent_chat');
+        });
+
+        const duration = 20000; // 20 seconds
+        const startTime = Date.now();
+
+        // Check if the notification is still open every second
+        const checkInterval = setInterval(() => {
+            if (noti && noti.close && (Date.now() - startTime) >= duration) {
+                noti.close();
+                clearInterval(checkInterval); // Stop checking
+            }
+        }, 1000); 
+    });
+}
