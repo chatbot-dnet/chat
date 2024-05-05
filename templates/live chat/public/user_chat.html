@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,7 +9,7 @@
 </head>
 <body>
     <div class="app">
-        <div class="screen join-screen active">
+        <div class="screen join-screen ">
             <div class="form">
                 <h2>Join Chatroom</h2>
                 <div class="form-input">
@@ -20,7 +21,7 @@
                 </div>
             </div>
         </div>
-        <div class="screen chat-screen">
+        <div class="screen chat-screen active">
             <div class="header">
                 <div class="logo">Chatroom </div>
                 
@@ -41,6 +42,17 @@
     const socket = io();
     let uname;
 
+    // Retrieve username from query parameter in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const username = urlParams.get('username');
+    if (username !== null && username !== undefined) {
+        uname = username;
+        console.log("Username:", uname);  // Print the username if present
+    } else {
+        // Redirect to http://127.0.0.1:5000/ if no username is provided
+        window.location.href = "http://127.0.0.1:5000/";
+    }
+    console.log("Username 2:", username); 
     document.querySelector(".join-screen #join-user").addEventListener("click", function () {
         let username = document.querySelector(".join-screen #username").value;
         if (username.length === 0) {
