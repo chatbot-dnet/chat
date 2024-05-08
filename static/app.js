@@ -1,13 +1,16 @@
+
 class Chatbox {
     constructor() {
         this.args = {
             openButton: document.querySelector('.chatbox__button'),
             chatBox: document.querySelector('.chatbox__support'),
             sendButton: document.querySelector('.send__button'),
+            settingsButton: document.getElementById('settingsButton'),
+            dropdownContent: document.getElementById('dropdownContent'),
             maximizeButton: document.getElementById('maximizeButton'),
             liveChatButton: document.getElementById('liveChatButton'),
             downloadButton: document.getElementById('downloadButton')
-        };
+        }
 
         this.state = false;
         this.messages = [];
@@ -15,14 +18,20 @@ class Chatbox {
     }
 
     display() {
-        const { openButton, chatBox, sendButton, maximizeButton, liveChatButton, downloadButton } = this.args;
-
+        const { openButton, chatBox, sendButton, settingsButton, dropdownContent, maximizeButton, downloadButton } = this.args;
+    
         openButton.addEventListener('click', () => this.toggleState(chatBox));
         sendButton.addEventListener('click', () => this.onSendButton(chatBox));
-        maximizeButton.addEventListener('click', () => this.maximizeChatbox(chatBox)); // Attach maximizeChatbox to the click event
-        liveChatButton.addEventListener('click', () => this.liveChatButton(chatBox)); //
-        downloadButton.addEventListener('click', () => this.downloadChatHistory(chatBox)); // Attach download
+    
+        settingsButton.addEventListener('click', (event) => {
+            event.stopPropagation();
+            this.toggleDropdown(dropdownContent);
+        });
 
+        maximizeButton.addEventListener('click', () => this.maximizeChatbox());
+        liveChatButton.addEventListener('click', () => this.liveChatButton());
+        downloadButton.addEventListener('click', () => this.downloadChatHistory());
+    
         const node = chatBox.querySelector('input');
         node.addEventListener("keyup", ({ key }) => {
             if (key === "Enter") {
@@ -30,99 +39,123 @@ class Chatbox {
             }
         });
     }
-
+    
     toggleState(chatbox) {
         this.state = !this.state;
 
+        // show or hide the box
         if (this.state) {
             chatbox.classList.add('chatbox--active');
             const node = chatbox.querySelector('input');
-            node.focus();
+        node.focus();
         } else {
             chatbox.classList.remove('chatbox--active');
         }
     }
 
     onSendButton(chatbox) {
-        const textField = chatbox.querySelector('input');
-        const text = textField.value.trim();
-
-        if (text === "") {
+        var textField = chatbox.querySelector('input');
+        let text1 = textField.value;
+        if (text1 === "") {
             return;
         }
 
-        const userMsg = { name: "User", message: text };
-        this.messages.push(userMsg);
+        let msg1 = { name: "User", message: text1 };
+        this.messages.push(msg1);
 
-        // Mock response
-        const omoshMsg = { name: "Omosh", message: "This is a mock response." };
-        this.messages.push(omoshMsg);
-
-        this.updateChatText(chatbox);
-        textField.value = '';
+        fetch('http://127.0.0.1:5000/predict', {
+            method: 'POST',
+            body: JSON.stringify({ message: text1 }),
+            mode: 'cors',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+        })
+            .then(r => r.json())
+            .then(r => {
+                let msg2 = { name: "Omosh", message: r.answer };
+                this.messages.push(msg2);
+                this.updateChatText(chatbox);
+                textField.value = '';
+            }).catch((error) => {
+                console.error('Error:', error);
+                this.updateChatText(chatbox);
+                textField.value = '';
+            });
     }
 
+        
     updateChatText(chatbox) {
-        let html = '';
-        this.messages.slice().reverse().forEach(item => {
-            const className = item.name === "Omosh" ? "messages__item messages__item--visitor" : "messages__item messages__item--operator";
-            html += `<div class="${className}">${item.message}</div>`;
+        var html = '';
+        this.messages.slice().reverse().forEach(function (item) {
+            if (item.name === "Omosh") {
+                html += '<div class="messages__item messages__item--visitor">' + item.message + '</div>';
+            } else {
+                html += '<div class="messages__item messages__item--operator">' + item.message + '</div>';
+            }
         });
 
         const chatmessage = chatbox.querySelector('.chatbox__messages');
         chatmessage.innerHTML = html;
     }
 
-    maximizeChatbox(chatbox) {
-        console.log('maximize button clicked');
-
-        // Check if chatbox is maximized, if not, maximize it
-        if (!document.fullscreenElement) {
-            if (chatbox.requestFullscreen) {
-                chatbox.requestFullscreen();
-            } else if (chatbox.webkitRequestFullscreen) {
-                chatbox.webkitRequestFullscreen();
-            } else if (chatbox.msRequestFullscreen) {
-                chatbox.msRequestFullscreen();
-            }
+    toggleDropdown(dropdownContent) {
+        if (this.dropdownVisible) {
+            dropdownContent.classList.remove('show');
         } else {
-            // Exit fullscreen mode if already maximized
-            if (document.exitFullscreen) {
-                document.exitFullscreen();
-            } else if (document.webkitExitFullscreen) {
-                document.webkitExitFullscreen();
-            } else if (document.msExitFullscreen) {
-                document.msExitFullscreen();
-            }
+            dropdownContent.classList.add('show');
+        }
+        this.dropdownVisible = !this.dropdownVisible;
+    }
+
+    maximizeChatbox() {
+        console.log('maximize button clicked');
+        if (chatbotContainer.requestFullscreen) {
+            chatbotContainer.requestFullscreen();
+        } else if (chatbotContainer.mozRequestFullScreen) { /* Firefox */
+            chatbotContainer.mozRequestFullScreen();
+        } else if (chatbotContainer.webkitRequestFullscreen) { /* Chrome, Safari & Opera */
+            chatbotContainer.webkitRequestFullscreen();
+        } else if (chatbotContainer.msRequestFullscreen) { /* IE/Edge */
+            chatbotContainer.msRequestFullscreen();
         }
     }
 
     downloadChatHistory() {
-        // Prepare chat history data
-        const chatHistory = this.messages.map(msg => `${msg.name}: ${msg.message}`).join('\n');
-        const blob = new Blob([chatHistory], { type: 'text/plain' });
-
-        // Create a link element and trigger download
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = 'chat_history.txt';
-        link.click();
+        // Functionality to download chat history
+        console.log('download button clicked');
+         // Functionality to download chat history
+         console.log('download button clicked');
+         // Prepare chat history data
+         const chatHistory = this.messages.map(msg => `${msg.name}: ${msg.message}`).join('\n');
+        
+         // Create a Blob containing the chat history text
+         const blob = new Blob([chatHistory], { type: 'text/plain' });
+ 
+         // Create a link element
+         const link = document.createElement('a');
+         link.href = URL.createObjectURL(blob);
+         link.download = 'chat_history.txt'; // Set filename
+ 
+         // Trigger a click event on the link to prompt download
+         link.click();
     }
 
     liveChatButton() {
-        console.log('Live chat button clicked');
-        // Redirect to live chat page
+        console.log('Live chat button clicked'); // Add this line
         window.location.href = '/live';
     }
+
 }
+
+    
 
 const chatbox = new Chatbox();
 chatbox.display();
 
-// Close dropdown when clicking outside of settings button
-window.addEventListener('click', function(event) {
+window.addEventListener('click', function (event) {
     const dropdownContent = document.getElementById('dropdownContent');
-    if (!event.target.matches('.dropbtn')) {
+    if (!event.target.matches('.settings-button')) {
         dropdownContent.classList.remove('show');
         chatbox.dropdownVisible = false;
     }
